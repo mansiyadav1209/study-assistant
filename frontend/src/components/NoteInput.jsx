@@ -7,6 +7,8 @@ function NoteInput() {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [flashcards, setFlashcards] = useState([]);
+  const [currentCard, setCurrentCard] = useState(0);
+  const [flipped, setFlipped] = useState(false);
 
   const MAX = 5000;
 
@@ -27,6 +29,8 @@ function NoteInput() {
 
       // Store the flashcards returned by the backend
       setFlashcards(response.data.data);
+      setCurrentCard(0);
+      setFlipped(false);
 
     } catch (error) {
       console.error("Full Error:", error);
@@ -85,16 +89,47 @@ function NoteInput() {
 
       {/* Render Flashcards */}
       {flashcards.length > 0 && (
-        <div className="mt-8 space-y-4">
-          {flashcards.map((card, index) => (
-            <Flashcard
-              key={index}
-              question={card.question}
-              answer={card.answer}
-            />
-          ))}
-        </div>
-      )}
+            <>
+                <Flashcard
+                question={flashcards[currentCard].question}
+                answer={flashcards[currentCard].answer}
+                flipped={flipped}
+                setFlipped={setFlipped}
+                />
+
+                <div className="flex justify-between mt-6">
+
+                <button
+                    onClick={() => {
+                        setCurrentCard((prev) => Math.max(prev - 1, 0));
+                        setFlipped(false);
+                    }}
+                    disabled={currentCard === 0}
+                    className="px-5 py-2 rounded-lg bg-gray-200 disabled:opacity-50"
+                    >
+                    Previous
+                    </button>
+
+                <span className="font-semibold">
+                    {currentCard + 1} / {flashcards.length}
+                </span>
+
+                 <button
+                    onClick={() => {
+                        setCurrentCard((prev) =>
+                        Math.min(prev + 1, flashcards.length - 1)
+                        );
+                        setFlipped(false);
+                    }}
+                    disabled={currentCard === flashcards.length - 1}
+                    className="px-5 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50"
+                    >
+                    Next
+                </button>
+
+                </div>
+            </>
+)}
 
     </div>
   );

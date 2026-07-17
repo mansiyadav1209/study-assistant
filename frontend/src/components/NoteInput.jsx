@@ -1,5 +1,6 @@
 import { useState } from "react";
 import GenerateButton from "./GenerateButton";
+import api from "../services/api";
 
 function NoteInput() {
 
@@ -8,20 +9,44 @@ function NoteInput() {
 
   const MAX = 5000;
 
-  const handleGenerate = () => {
+ const handleGenerate = async () => {
 
     if (!notes.trim()) {
-      alert("Please enter some notes.");
-      return;
+
+        alert("Please enter some notes.");
+        return;
+
     }
 
-    setLoading(true);
+    try {
 
-    setTimeout(() => {
-      setLoading(false);
-    }, 2000);
+        setLoading(true);
 
-  };
+        const response = await api.post("/generate", {
+
+            notes
+
+        });
+
+        console.log(response.data);
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+        alert("Something went wrong.");
+
+    }
+
+    finally{
+
+        setLoading(false);
+
+    }
+
+};
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-8">

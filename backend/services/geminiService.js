@@ -80,7 +80,7 @@ ${notes}
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-flash-latest",
+        model: "gemini-3.5-flash",
         contents: prompt,
       });
 
@@ -95,7 +95,7 @@ ${notes}
 
       console.log(`Gemini busy. Retry ${attempt}/3...`);
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 5000 * attempt));
     }
   }
 

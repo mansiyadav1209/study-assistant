@@ -9,45 +9,30 @@ function NoteInput() {
 
   const MAX = 5000;
 
- const handleGenerate = async () => {
+   const handleGenerate = async () => {
+        if (!notes.trim()) {
+            alert("Please enter your notes.");
+            return;
+        }
 
-    if (!notes.trim()) {
+        try {
+            setLoading(true);
 
-        alert("Please enter some notes.");
-        return;
+            const response = await API.post("/generate", {
+            notes,
+            });
 
-    }
+            console.log(response.data);
 
-    try {
+            setLoading(false);
+        } catch (error) {
+            console.error(error);
 
-        setLoading(true);
+            setLoading(false);
 
-        const response = await api.post("/generate", {
-
-            notes
-
-        });
-
-        console.log(response.data);
-
-    }
-
-    catch(error){
-
-        console.error(error);
-
-        alert("Something went wrong.");
-
-    }
-
-    finally{
-
-        setLoading(false);
-
-    }
-
-};
-
+            alert("Something went wrong");
+        }
+        };
   return (
     <div className="bg-white rounded-2xl shadow-lg p-8">
 

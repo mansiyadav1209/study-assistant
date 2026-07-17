@@ -1,38 +1,51 @@
 import { useState } from "react";
 import GenerateButton from "./GenerateButton";
+import Flashcard from "./Flashcard";
 import api from "../services/api";
 
 function NoteInput() {
-
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
+  const [flashcards, setFlashcards] = useState([]);
 
   const MAX = 5000;
 
-   const handleGenerate = async () => {
-        if (!notes.trim()) {
-            alert("Please enter your notes.");
-            return;
-        }
+  const handleGenerate = async () => {
+    if (!notes.trim()) {
+      alert("Please enter some notes.");
+      return;
+    }
 
-        try {
-            setLoading(true);
+    try {
+      setLoading(true);
 
-            const response = await API.post("/generate", {
-            notes,
-            });
+      const response = await api.post("/generate", {
+        notes,
+      });
 
-            console.log(response.data);
+      console.log(response.data);
 
-            setLoading(false);
-        } catch (error) {
-            console.error(error);
+      // Store the flashcards returned by the backend
+      setFlashcards(response.data.data);
 
-            setLoading(false);
+    } catch (error) {
+      console.error("Full Error:", error);
 
-            alert("Something went wrong");
-        }
-        };
+      if (error.response) {
+        console.log("Response:", error.response.data);
+        console.log("Status:", error.response.status);
+      } else if (error.request) {
+        console.log("No response received:", error.request);
+      } else {
+        console.log("Error:", error.message);
+      }
+
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-lg p-8">
 
@@ -52,7 +65,6 @@ function NoteInput() {
       />
 
       <div className="flex justify-end mt-2">
-
         <span
           className={`text-sm ${
             notes.length > 4500
@@ -62,12 +74,27 @@ function NoteInput() {
         >
           {notes.length} / {MAX}
         </span>
-
       </div>
 
       <div className="mt-6">
-        <GenerateButton loading={loading} onClick={handleGenerate}/>
+        <GenerateButton
+          loading={loading}
+          onClick={handleGenerate}
+        />
       </div>
+
+      {/* Render Flashcards */}
+      {flashcards.length > 0 && (
+        <div className="mt-8 space-y-4">
+          {flashcards.map((card, index) => (
+            <Flashcard
+              key={index}
+              question={card.question}
+              answer={card.answer}
+            />
+          ))}
+        </div>
+      )}
 
     </div>
   );

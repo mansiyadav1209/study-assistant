@@ -32,5 +32,5 @@ ${notes}
     contents: prompt,
   });
 
-  return response.text;
+   return JSON.parse(response.text);
 }

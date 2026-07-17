@@ -1,18 +1,29 @@
 import { useState } from "react";
 import GenerateButton from "./GenerateButton";
 import Flashcard from "./Flashcard";
+import Quiz from "./Quiz";
 import api from "../services/api";
 
 function NoteInput() {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // AI Data
   const [flashcards, setFlashcards] = useState([]);
+  const [quiz, setQuiz] = useState([]);
+
+  // Flashcard
   const [currentCard, setCurrentCard] = useState(0);
   const [flipped, setFlipped] = useState(false);
+
+  // Toggle between Flashcards & Quiz
+  const [quizMode, setQuizMode] = useState(false);
 
   const MAX = 5000;
 
   const handleGenerate = async () => {
+    
+
     if (!notes.trim()) {
       alert("Please enter some notes.");
       return;
@@ -27,28 +38,34 @@ function NoteInput() {
 
       console.log(response.data);
 
-      // Store the flashcards returned by the backend
-      setFlashcards(response.data.data);
+      // Save AI response
+      setFlashcards(response.data.data.flashcards);
+      setQuiz(response.data.data.quiz);
+
+      // Reset flashcard state
       setCurrentCard(0);
       setFlipped(false);
 
-    } catch (error) {
-      console.error("Full Error:", error);
+      // Back to flashcards after new generation
+      setQuizMode(false);
 
+    } catch (error) {
+      console.error(error);
       if (error.response) {
-        console.log("Response:", error.response.data);
+
         console.log("Status:", error.response.status);
-      } else if (error.request) {
-        console.log("No response received:", error.request);
+        console.log("Response:", error.response.data);
+        alert(error.response.data.message);
       } else {
-        console.log("Error:", error.message);
+      
+        alert(error.message);
       }
 
-      alert(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+      alert("Something went wrong.");
+      } finally {
+          setLoading(false);
+      }
+      };
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-8">
@@ -56,6 +73,7 @@ function NoteInput() {
       <label className="font-semibold text-slate-700">
         Paste your study notes
       </label>
+
 
       <textarea
         value={notes}
@@ -80,6 +98,8 @@ function NoteInput() {
         </span>
       </div>
 
+
+
       <div className="mt-6">
         <GenerateButton
           loading={loading}
@@ -87,49 +107,74 @@ function NoteInput() {
         />
       </div>
 
-      {/* Render Flashcards */}
-      {flashcards.length > 0 && (
-            <>
-                <Flashcard
-                question={flashcards[currentCard].question}
-                answer={flashcards[currentCard].answer}
-                flipped={flipped}
-                setFlipped={setFlipped}
-                />
+      {/* ---------------- FLASHCARD MODE ---------------- */}
 
-                <div className="flex justify-between mt-6">
+      {flashcards.length > 0 && !quizMode && (
+        <>
+          <div className="mt-8">
+            <Flashcard
+              question={flashcards[currentCard].question}
+              answer={flashcards[currentCard].answer}
+              flipped={flipped}
+              setFlipped={setFlipped}
+            />
+          </div>
 
-                <button
-                    onClick={() => {
-                        setCurrentCard((prev) => Math.max(prev - 1, 0));
-                        setFlipped(false);
-                    }}
-                    disabled={currentCard === 0}
-                    className="px-5 py-2 rounded-lg bg-gray-200 disabled:opacity-50"
-                    >
-                    Previous
-                    </button>
+          <div className="flex justify-between mt-6">
 
-                <span className="font-semibold">
-                    {currentCard + 1} / {flashcards.length}
-                </span>
+            <button
+              onClick={() => {
+                setCurrentCard((prev) =>
+                  Math.max(prev - 1, 0)
+                );
+                setFlipped(false);
+              }}
+              disabled={currentCard === 0}
+              className="px-5 py-2 rounded-lg bg-gray-200 disabled:opacity-50"
+            >
+              Previous
+            </button>
 
-                 <button
-                    onClick={() => {
-                        setCurrentCard((prev) =>
-                        Math.min(prev + 1, flashcards.length - 1)
-                        );
-                        setFlipped(false);
-                    }}
-                    disabled={currentCard === flashcards.length - 1}
-                    className="px-5 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50"
-                    >
-                    Next
-                </button>
+            <span className="font-semibold">
+              {currentCard + 1} / {flashcards.length}
+            </span>
 
-                </div>
-            </>
-)}
+            <button
+              onClick={() => {
+                setCurrentCard((prev) =>
+                  Math.min(prev + 1, flashcards.length - 1)
+                );
+                setFlipped(false);
+              }}
+              disabled={currentCard === flashcards.length - 1}
+              className="px-5 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50"
+            >
+              Next
+            </button>
+
+          </div>
+
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => setQuizMode(true)}
+              className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700"
+            >
+              Start Quiz
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* ---------------- QUIZ MODE ---------------- */}
+
+      {quizMode && (
+        <div className="mt-8">
+          <Quiz
+            quiz={quiz}
+            onExit={() => setQuizMode(false)}
+          />
+        </div>
+      )}
 
     </div>
   );

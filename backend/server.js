@@ -6,6 +6,7 @@ import generateRoute from "./routes/generate.js";
 
 dotenv.config();
 
+
 const app = express();
 
 app.use(cors());
